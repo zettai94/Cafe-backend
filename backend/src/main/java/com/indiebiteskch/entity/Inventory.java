@@ -1,0 +1,43 @@
+package com.indiebiteskch.entity;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.PositiveOrZero;
+import lombok.Getter;
+import lombok.Setter;
+
+@Entity
+@Table(name = "inventory")
+@Getter @Setter
+public class Inventory {
+
+    //takes productid as primary
+    @Id
+    @Column(name = "product_id")
+    private Long productID;
+
+    @OneToOne
+    @MapsId
+    @JoinColumn(name = "product_id")
+    private Product product;
+
+    @Column(name = "current_qty")
+    @PositiveOrZero(message = "Inventory stock cannot be negative")
+    private int inStock;
+    
+    public void setProduct(Product product) 
+    {
+        this.product = product;
+        if(product != null)
+        {
+            //make sure invenID matches productID
+            this.productID = product.getProductId();
+
+            //if product's inventory doesn't matches this,
+            //synch them
+            if(product.getInventory() != this)
+            {
+                product.setInventory(this);
+            }
+        }
+    }
+}
