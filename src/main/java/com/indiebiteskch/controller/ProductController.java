@@ -7,17 +7,18 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.*;
 
-import com.indiebiteskch.repository.ProductRepo;
+import com.indiebiteskch.service.ProductService;
 import com.indiebiteskch.entity.*;
 
 @RestController
 @RequestMapping("/api/products")
 public class ProductController {
+    
     @Autowired
-    private ProductRepo prodRepo;
+    private ProductService prodService;
 
     @GetMapping
-    public List<Product> getAllProducts() {
-        return prodRepo.findAll();
+    public List<Product> getAll() {
+        return prodService.getAllProducts();
     }
 }

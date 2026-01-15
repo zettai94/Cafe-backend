@@ -2,6 +2,7 @@ package com.indiebiteskch.entity;
 
 import java.math.BigDecimal;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.indiebiteskch.model.Category;
 
 import jakarta.persistence.*;
@@ -18,7 +19,7 @@ import jakarta.validation.constraints.Positive;
 public class Product {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "product_id")
     private Long productId;
 
@@ -45,6 +46,7 @@ public class Product {
     //one to one relationship; auto cascade when product is deleted
     //lazy fetch to avoid loading inventory data unless needed (beverage not tracked)
     @OneToOne(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference
     private Inventory inventory;
 
 

@@ -16,3 +16,5 @@ CREATE TABLE IF NOT EXISTS inventory (
         REFERENCES product(product_id)
         ON DELETE CASCADE
 );
+
+-- order and orderItem to be implemented later

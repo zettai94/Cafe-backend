@@ -1,5 +1,7 @@
 package com.indiebiteskch.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Getter;
@@ -18,6 +20,7 @@ public class Inventory {
     @OneToOne
     @MapsId
     @JoinColumn(name = "product_id")
+    @JsonBackReference
     private Product product;
 
     @Column(name = "current_qty")
