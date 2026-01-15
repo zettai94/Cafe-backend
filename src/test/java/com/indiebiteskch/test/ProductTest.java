@@ -21,6 +21,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 
@@ -49,14 +50,14 @@ public class ProductTest {
         p1.setProductId(1L);
         p1.setProductName("Test Product");
         p1.setCategory(Category.BEVERAGE);
-        p1.setProductPrice(10.15);
+        p1.setProductPrice(BigDecimal.valueOf(10.15));
         p1.setDescription("This is a test product - beverage.");
 
         p2  = new Product();
         p2.setProductId(2L);
         p2.setProductName("Test Product2");
         p2.setCategory(Category.CAKE);
-        p2.setProductPrice(10.15);
+        p2.setProductPrice(BigDecimal.valueOf(10.15));
         p2.setDescription("This is a test product - cake.");
     }
 
@@ -157,7 +158,7 @@ public class ProductTest {
         //only change the name to Update: Test Product
         temp.setProductName("Updated: Test Product");
         temp.setCategory(Category.BEVERAGE);
-        temp.setProductPrice(10.15);
+        temp.setProductPrice(BigDecimal.valueOf(10.15));
         temp.setDescription("This is a test product - beverage.");
 
         assertFalse(temp.getProductName().equals(p1.getProductName()));

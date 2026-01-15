@@ -1,5 +1,7 @@
 package com.indiebiteskch.entity;
 
+import java.math.BigDecimal;
+
 import com.indiebiteskch.model.Category;
 
 import jakarta.persistence.*;
@@ -29,9 +31,9 @@ public class Product {
     @NotNull(message = "Product name cannot be null")
     private String productName;
 
-    @Column(name ="product_price")
+    @Column(name ="product_price", precision = 10, scale = 2)
     @Positive(message = "Product price must be greater than 0")
-    private Double productPrice;
+    private BigDecimal productPrice;
 
     @Column(name = "product_image_url")
     private String productImageURL;

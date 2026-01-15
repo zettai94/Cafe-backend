@@ -17,7 +17,7 @@ public class OrderItem {
 
     //order and item are FKs 
     @ManyToOne
-    @Column(name = "order")
+    @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
     @ManyToOne

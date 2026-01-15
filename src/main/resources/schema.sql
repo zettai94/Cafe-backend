@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS product (
 
 CREATE TABLE IF NOT EXISTS inventory (
     product_id BIGINT PRIMARY KEY,
-    current_qty INT NOT NULL DEFAULT 0;
+    current_qty INT NOT NULL DEFAULT 0,
 
     CONSTRAINT fk_inventory_product
         FOREIGN KEY (product_id)

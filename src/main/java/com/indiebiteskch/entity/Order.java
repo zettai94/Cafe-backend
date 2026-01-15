@@ -1,5 +1,6 @@
 package com.indiebiteskch.entity;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import jakarta.persistence.*;
@@ -25,7 +26,7 @@ public class Order {
 
     @Column(name = "total_amount")
     @Positive(message = "Total amount must be positive")
-    private Double total;
+    private BigDecimal total;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List <OrderItem> items;
