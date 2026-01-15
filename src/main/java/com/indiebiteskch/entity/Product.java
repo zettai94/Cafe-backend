@@ -52,6 +52,7 @@ public class Product {
 
 
     //custom setter for managing bi-directional relationship between Product and Inventory
+    // REMINDER: @Data may fight manual logic since @setter auto generates too
     public void setInventory(Inventory inventory) {
         if(inventory == null)
         {
