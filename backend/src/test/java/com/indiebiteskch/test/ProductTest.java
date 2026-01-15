@@ -24,7 +24,6 @@ import java.util.Optional;
 import java.util.Arrays;
 import java.util.List;
 
-import org.h2.command.ddl.CreateAggregate;
 import org.junit.jupiter.api.AfterEach;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
