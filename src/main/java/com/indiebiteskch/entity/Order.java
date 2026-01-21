@@ -6,10 +6,11 @@ import java.util.List;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 
 @Entity
-@Table(name = "orders")
+@Table(name = "cafe_order")
 @Getter @Setter
 public class Order {
     
@@ -18,14 +19,20 @@ public class Order {
     @Column(name = "order_id")
     private Long orderID;
 
-    @Column(name = "time_ordered")
+    @Column(name = "order_date", updatable = false)
     private LocalDateTime createdAt;
 
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
+
     @Column(name = "status")
-    private String status;
+    @NotNull(message = "Order status cannot be null")
+    private String status = "PENDING"; //default value; considering ENUM later
 
     @Column(name = "total_amount")
-    @Positive(message = "Total amount must be positive")
+    @PositiveOrZero(message = "Total amount cannot be negative")
     private BigDecimal total;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

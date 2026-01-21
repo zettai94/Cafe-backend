@@ -1,12 +1,14 @@
 package com.indiebiteskch.entity;
 
+import java.math.BigDecimal;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Positive;
 import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "order_items")
+@Table(name = "order_item")
 @Getter @Setter
 public class OrderItem {
     
@@ -21,9 +23,13 @@ public class OrderItem {
     private Order order;
 
     @ManyToOne
+    @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
-    @Column(name= "order_item_qty")
+    @Column(name= "quantity")
     @Positive(message = "Order quantity must be positive")
     private Integer orderQty;
+
+    @Column(name ="price_at_purchase")
+    private BigDecimal priceAtPurchase;
 }
