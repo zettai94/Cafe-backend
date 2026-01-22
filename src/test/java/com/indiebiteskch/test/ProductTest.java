@@ -80,7 +80,7 @@ public class ProductTest {
     {
         List<Product> mockList = Arrays.asList(p1, p2);
 
-        when(productRepo.findAllByCategory("beverage")).thenReturn(mockList);
+        when(productRepo.findAllByCategory(Category.BEVERAGE)).thenReturn(mockList);
 
         List<Product> result = productService.getProductsByCategory("beverage");
 

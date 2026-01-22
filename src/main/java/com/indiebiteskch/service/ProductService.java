@@ -5,6 +5,8 @@ import com.indiebiteskch.entity.Product;
 import com.indiebiteskch.repository.ProductRepo;
 import com.indiebiteskch.service.interfaces.ProductServiceInterface;
 import com.indiebiteskch.exceptions.ProductIDNotFoundException;
+import com.indiebiteskch.model.Category;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -30,7 +32,8 @@ public class ProductService implements ProductServiceInterface{
     @Override
     public List<Product> getProductsByCategory(String category)
     {
-        return productRepo.findAllByCategory(category);
+        Category cat = Category.valueOf(category.toUpperCase());
+        return productRepo.findAllByCategory(cat);
     }
 
     //search bar usage; get all product containing certain string
