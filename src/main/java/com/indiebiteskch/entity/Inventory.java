@@ -1,5 +1,7 @@
 package com.indiebiteskch.entity;
 
+import java.time.LocalDateTime;
+
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.*;
@@ -26,6 +28,13 @@ public class Inventory {
     @Column(name = "current_qty")
     @PositiveOrZero(message = "Inventory stock cannot be negative")
     private int inStock;
+
+    // for soft locking items, default at 0; 15 mins
+    @Column(name = "reserved_qty")
+    private int reservedQty = 0;
+
+    @Column(name = "hold_expires_at")
+    private LocalDateTime holdExpiresAt;
     
     public void setProduct(Product product) 
     {

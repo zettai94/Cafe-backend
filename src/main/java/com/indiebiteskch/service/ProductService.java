@@ -4,9 +4,14 @@ import com.indiebiteskch.dto.CreateProductResponse;
 import com.indiebiteskch.entity.Product;
 import com.indiebiteskch.repository.ProductRepo;
 import com.indiebiteskch.service.interfaces.ProductServiceInterface;
+
+import jakarta.transaction.Transactional;
+
 import com.indiebiteskch.exceptions.ProductIDNotFoundException;
 import com.indiebiteskch.model.Category;
+import com.indiebiteskch.entity.Inventory;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -90,4 +95,28 @@ public class ProductService implements ProductServiceInterface{
         productRepo.deleteById(id);
     }
 
+    // reserve stock for an oder
+    @Transactional
+    public void reserveStock(Long productId, int quantity)
+    {
+        Product prod = productRepo.findByProductId(productId)
+                        .orElseThrow(()-> new ProductIDNotFoundException(productId));
+        Inventory inv = prod.getInventory();
+        if(inv != null)
+        {
+            int actualStock = inv.getInStock() - inv.getReservedQty();
+
+            if(actualStock >= quantity)
+            {
+                inv.setReservedQty(inv.getReservedQty() + quantity);
+                // set hold expiry time to 15 mins from now
+                inv.setHoldExpiresAt(LocalDateTime.now().plusMinutes(15));
+                productRepo.save(prod);
+            }
+            else
+            {
+                throw new IllegalArgumentException("Insufficient stock to reserve");
+            }
+        }
+    }
 }

@@ -35,3 +35,8 @@ CREATE TABLE IF NOT EXISTS order_item (
     CONSTRAINT fk_product FOREIGN KEY (product_id) REFERENCES product(product_id) ON DELETE CASCADE
 );
 
+
+ALTER TABLE inventory
+ADD COLUMN IF NOT EXISTS reserved_qty INT NOT NULL DEFAULT 0,
+ADD COLUMN IF NOT EXISTS hold_expires_at TIMESTAMP;
+
