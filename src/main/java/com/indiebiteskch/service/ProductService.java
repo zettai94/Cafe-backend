@@ -7,6 +7,7 @@ import com.indiebiteskch.service.interfaces.ProductServiceInterface;
 
 import jakarta.transaction.Transactional;
 
+import com.indiebiteskch.exceptions.InsufficientStockException;
 import com.indiebiteskch.exceptions.ProductIDNotFoundException;
 import com.indiebiteskch.model.Category;
 import com.indiebiteskch.entity.Inventory;
@@ -99,6 +100,7 @@ public class ProductService implements ProductServiceInterface{
     @Transactional
     public void reserveStock(Long productId, int quantity)
     {
+        //precautionary check, prodoctId should exist by default
         Product prod = productRepo.findByProductId(productId)
                         .orElseThrow(()-> new ProductIDNotFoundException(productId));
         Inventory inv = prod.getInventory();
@@ -115,7 +117,8 @@ public class ProductService implements ProductServiceInterface{
             }
             else
             {
-                throw new IllegalArgumentException("Insufficient stock to reserve");
+                //throw exception if not enough stock
+                throw new InsufficientStockException("Stock for " + prod.getProductName() + " is less than " + quantity);
             }
         }
     }
