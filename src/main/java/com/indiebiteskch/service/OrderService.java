@@ -103,6 +103,12 @@ public class OrderService {
            Inventory inv = item.getProduct().getInventory();
            if(inv != null)
            {
+                //double check if enough stock is available
+                if(inv.getInStock() < item.getOrderQty())
+                {
+                    throw new InsufficientStockException("Insufficient stock for product: " + 
+                                                        item.getProduct().getProductName());
+                }
                 //deduct stock based on order quantity
                 inv.setInStock(inv.getInStock() - item.getOrderQty());
                 //reduce reserved quantity accordingly
