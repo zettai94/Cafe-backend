@@ -16,7 +16,7 @@ import com.indiebiteskch.repository.ProductRepo;
 import com.indiebiteskch.entity.OrderItem;
 import com.indiebiteskch.entity.Inventory;
 import com.indiebiteskch.exceptions.InsufficientStockException;
-import com.indiebiteskch.exceptions.OrderIDDoesNotExistException;
+import com.indiebiteskch.exceptions.OrderIDNotFoundException;
 import com.indiebiteskch.exceptions.ProductIDNotFoundException;
 
 import jakarta.transaction.Transactional;
@@ -89,7 +89,7 @@ public class OrderService {
     public Order finalizeOrder(Long orderId)
     {
         Order existing = orderRepo.findById(orderId)
-                        .orElseThrow(()-> new OrderIDDoesNotExistException("Order ID " + orderId + " not found"));
+                        .orElseThrow(()-> new OrderIDNotFoundException("Order ID " + orderId + " not found"));
 
         if(!"PENDING".equals(existing.getStatus()))
         {
