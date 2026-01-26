@@ -36,52 +36,43 @@ public class OrderService {
     // Create order; will reserve stock until "pay" button is clicked (demo purpose)
     // and check for inventory 
     @Transactional
-    public Order reservation(OrderRequest request)
-    {
-        Order newOrder = new Order();
-        newOrder.setStatus("PENDING");
-        newOrder.setCreatedAt(LocalDateTime.now());
+    public Order addToOrder(Long existingOrderId, OrderItemRequest itemReq) {
+        Order order;
 
-        List<OrderItem> orderList = new ArrayList<>();
-        BigDecimal totalAmount = BigDecimal.ZERO;
-
-        for(OrderItemRequest itemReq: request.items())
-        {
-            //product should exist; but precautionary check
-            Product prod = productRepo.findByProductId(itemReq.productId())
-                            .orElseThrow(() -> new ProductIDNotFoundException(itemReq.productId()));
-            Inventory inv = prod.getInventory();
-
-            // as some of the products (beverage) may not have inventory
-            // only check if inv is not null (aka they're checked-stock); reserve them for customer
-            if(inv != null)
-            {
-                //throw exception if requested quantity is more than available stock
-                if(inv.getInStock() - inv.getReservedQty() < itemReq.quantity())
-                {
-                    throw new InsufficientStockException("Insufficient stock for product ID: " + prod.getProductName());
-                }
-                //otherwise, update reserved quantity and hold expiry
-                inv.setReservedQty(inv.getReservedQty() + itemReq.quantity());
-                inv.setHoldExpiresAt(LocalDateTime.now().plusMinutes(15));
-            }
-
-            //create new orderItem for each product in order
-            OrderItem orderItem = new OrderItem();
-            orderItem.setProduct(prod);
-            orderItem.setOrderQty(itemReq.quantity());
-            orderItem.setPriceAtPurchase(prod.getProductPrice());
-            orderItem.setOrder(newOrder);
-            //finally, add to list of this order
-            orderList.add(orderItem);
-
-            //each item price * quantity for total amount
-            totalAmount = totalAmount.add(prod.getProductPrice()
-                            .multiply(BigDecimal.valueOf(itemReq.quantity())));
+        // 1. Get existing order or create a new one
+        if (existingOrderId == null) {
+            order = new Order();
+            order.setStatus("PENDING");
+        } else {
+            order = orderRepo.findById(existingOrderId)
+                    .orElseThrow(() -> new OrderIDNotFoundException("Order id: " +existingOrderId+ " not found"));
         }
-        newOrder.setItems(orderList);
-        newOrder.setTotal(totalAmount);
-        return orderRepo.save(newOrder);
+
+        // 2. Logic to handle the product & inventory
+        Product prod = productRepo.findByProductId(itemReq.productId())
+                .orElseThrow(() -> new ProductIDNotFoundException(itemReq.productId()));
+        
+        Inventory inv = prod.getInventory();
+        if (inv != null) {
+            // Check stock and update reservedQty (same as your current logic)
+            inv.setReservedQty(inv.getReservedQty() + itemReq.quantity());
+            
+            // 3. RESET the timer for the entire order
+            inv.setHoldExpiresAt(LocalDateTime.now().plusMinutes(15));
+        }
+
+        // 4. Link item to order
+        OrderItem orderItem = new OrderItem();
+        orderItem.setProduct(prod);
+        orderItem.setOrderQty(itemReq.quantity());
+        orderItem.setPriceAtPurchase(prod.getProductPrice());
+        order.addItem(orderItem);
+
+        // 5. Update total and save
+        BigDecimal currentTotal = order.getTotal() != null ? order.getTotal() : BigDecimal.ZERO;
+        order.setTotal(currentTotal.add(prod.getProductPrice().multiply(BigDecimal.valueOf(itemReq.quantity()))));
+
+        return orderRepo.save(order);
     }
 
     // when customer pays, finalize the order and deduct stock accordingly
@@ -98,7 +89,7 @@ public class OrderService {
             throw new IllegalStateException("Order ID " + orderId + " is not in PENDING status");
         }
 
-        for(OrderItem item: existing.getItems())
+        for(OrderItem item: existing.getOrderList())
         {
            Inventory inv = item.getProduct().getInventory();
            if(inv != null)

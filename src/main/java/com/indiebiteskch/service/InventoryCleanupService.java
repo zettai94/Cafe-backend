@@ -28,7 +28,7 @@ public class InventoryCleanupService {
         LocalDateTime current = LocalDateTime.now();
         
         //release locks on inventory
-        List<Inventory> expiredInventories = invenRepo.findHoldExpiresAtBefore(current);
+        List<Inventory> expiredInventories = invenRepo.findByHoldExpiresAtBefore(current);
         for(Inventory inv: expiredInventories)
         {
             inv.setReservedQty(0);
@@ -37,7 +37,7 @@ public class InventoryCleanupService {
 
         //cancel abondoned orders and set to "EXPIRED" status
         List<Order> abandonedOrders =  
-                    orderRepo.findByStatusAndOrderDateBefore("PENDING", current.minusMinutes(15));
+                    orderRepo.findByStatusAndCreatedAtBefore("PENDING", current.minusMinutes(15));
         for(Order ord: abandonedOrders)
         {
             ord.setStatus("EXPIRED");

@@ -8,5 +8,5 @@ import com.indiebiteskch.entity.Order;
 
 @Repository
 public interface OrderRepo extends JpaRepository<Order, Long>{
-    List<Order> findByStatusAndOrderDateBefore(String status, LocalDateTime dateTime);
+    List<Order> findByStatusAndCreatedAtBefore(String status, LocalDateTime createdAt);
 }

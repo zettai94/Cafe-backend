@@ -25,8 +25,8 @@ public class ProductController {
 
     /* Aim for Customers' usage:
     - Get all products
-    - Get product by name (list)
-    - Get product by category (list)
+    - Get product by name (list); example- "/products?name=latte"
+    - Get product by category (list); example- "/products?category=beverage"
     */
 
     @GetMapping

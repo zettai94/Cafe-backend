@@ -15,5 +15,5 @@ public interface InventoryRepo extends JpaRepository<Inventory, Long>{
     @Query("UPDATE Inventory i SET i.reservedQty = 0, i.holdExpiresAt = null WHERE i.holdExpiresAt <= :now")
     void releaseExpiredHolds(@Param("now") LocalDateTime now);
 
-    List<Inventory> findHoldExpiresAtBefore(LocalDateTime now);
+    List<Inventory> findByHoldExpiresAtBefore(LocalDateTime now);
 }
