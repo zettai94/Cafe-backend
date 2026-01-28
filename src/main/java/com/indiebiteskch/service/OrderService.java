@@ -33,6 +33,12 @@ public class OrderService {
         this.productRepo = productRepo;
     }
 
+    // Get order by ID
+    public Order getOrderById(Long id) {
+        return orderRepo.findById(id)
+                .orElseThrow(() -> new OrderIDNotFoundException("Order id: " + id + " not found"));
+    }
+
     // Create order; will reserve stock until "pay" button is clicked (demo purpose)
     // and check for inventory 
     @Transactional
@@ -49,8 +55,8 @@ public class OrderService {
         }
 
         // 2. Logic to handle the product & inventory
-        Product prod = productRepo.findByProductId(itemReq.productId())
-                .orElseThrow(() -> new ProductIDNotFoundException(itemReq.productId()));
+        Product prod = productRepo.findByProductId(itemReq.productID())
+                .orElseThrow(() -> new ProductIDNotFoundException(itemReq.productID()));
         
         Inventory inv = prod.getInventory();
         if (inv != null) {
