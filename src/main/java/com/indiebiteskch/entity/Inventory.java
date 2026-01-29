@@ -17,7 +17,7 @@ public class Inventory {
     //takes productid as primary
     @Id
     @Column(name = "product_id")
-    private Long productID;
+    private Long productId;
 
     @OneToOne
     @MapsId
@@ -42,7 +42,7 @@ public class Inventory {
         if(product != null)
         {
             //make sure invenID matches productID
-            this.productID = product.getProductId();
+            this.productId = product.getProductId();
 
             //if product's inventory doesn't matches this,
             //synch them

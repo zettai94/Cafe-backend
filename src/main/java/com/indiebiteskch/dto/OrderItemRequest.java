@@ -1,4 +1,4 @@
 package com.indiebiteskch.dto;
 
-public record OrderItemRequest (Long productID, int quantity)    
+public record OrderItemRequest (Long productId, int quantity)    
 {}

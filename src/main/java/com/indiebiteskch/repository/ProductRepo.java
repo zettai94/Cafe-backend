@@ -18,7 +18,7 @@ public interface ProductRepo extends JpaRepository<Product, Long>{
     Optional<Product> findByProductName(String name);
     List<Product> findAllByCategory(Category category);
     List<Product> findByProductNameContainingIgnoreCase(String name);
-    Optional<Product>findByProductId(Long id);
+    Optional<Product>findByProductId(Long productId);
 
     @Query("SELECT p FROM Product p WHERE p.inventory.holdExpiresAt <= :now")
     List<Product> findExpiredReservations(@Param("now") LocalDateTime now);
