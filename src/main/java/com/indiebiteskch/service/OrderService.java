@@ -163,6 +163,13 @@ public class OrderService {
         //remove the item from list of order items
         currentOrder.getOrderList().remove(removeItem);
 
+        //if orderItem list is empty after removal, return null (aka delete order)
+        if(currentOrder.getOrderList().isEmpty())
+        {
+            orderRepo.delete(currentOrder);
+            return null;
+        }
+
         return orderRepo.save(currentOrder);
     }
 }
