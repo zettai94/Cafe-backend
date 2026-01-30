@@ -47,6 +47,7 @@ public class OrderService {
         if (existingOrderId == null) {
             order = new Order();
             order.setStatus("PENDING");
+            order.setTotal(BigDecimal.ZERO);
         } else {
             order = orderRepo.findById(existingOrderId)
                     .orElseThrow(() -> new OrderIDNotFoundException("Order id: " + existingOrderId + " not found"));
@@ -58,7 +59,13 @@ public class OrderService {
 
         Inventory inv = prod.getInventory();
         if (inv != null) {
-            // Check stock and update reservedQty (same as your current logic)
+            // if what's in stock - current reserved qty is less than the requested qty
+            // throw insufficient stock exception
+            if (inv.getInStock() - inv.getReservedQty() < itemReq.quantity()) {
+                throw new InsufficientStockException("Insufficient stock for product: " + prod.getProductName());
+            }
+
+            // otherwise, set new reserved qty with current reserved + requested qty
             inv.setReservedQty(inv.getReservedQty() + itemReq.quantity());
 
             // 3. RESET the timer for the entire order

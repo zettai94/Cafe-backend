@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.indiebiteskch.entity.Inventory;
 import com.indiebiteskch.entity.Order;
-import com.indiebiteskch.repository.InventoryRepo;
+import com.indiebiteskch.entity.OrderItem;
 import com.indiebiteskch.repository.OrderRepo;
 
 import jakarta.transaction.Transactional;
@@ -18,28 +18,36 @@ import jakarta.transaction.Transactional;
 public class InventoryCleanupService {
     
     @Autowired
-    private InventoryRepo invenRepo;
-    @Autowired
     private OrderRepo orderRepo;
 
     @Scheduled(fixedRate = 60000) // runs every minute
     @Transactional
     public void cleanupExpiredReservations(){
-        LocalDateTime current = LocalDateTime.now();
+        // if time now is 2 pm, any thing before 1.45 pm (15 mins ago) is expired
+        // faster cleanup than checking for every order to see how long since created
+        LocalDateTime treshold = LocalDateTime.now().minusMinutes(15);
         
-        //release locks on inventory
-        List<Inventory> expiredInventories = invenRepo.findByHoldExpiresAtBefore(current);
-        for(Inventory inv: expiredInventories)
+        //find pending order that's timed out
+       List<Order> expiredOrders = 
+                    orderRepo.findByStatusAndCreatedAtBefore("PENDING", treshold);
+        for(Order ord: expiredOrders)
         {
-            inv.setReservedQty(0);
-            inv.setHoldExpiresAt(null);  
-        }
+            for(OrderItem item: ord.getOrderList())
+            {
+                Inventory inv = item.getProduct().getInventory();
+                if(inv != null)
+                {
+                    int newReservationQty = Math.max(0, inv.getReservedQty() - item.getOrderQty());
+                    inv.setReservedQty(newReservationQty);
 
-        //cancel abondoned orders and set to "EXPIRED" status
-        List<Order> abandonedOrders =  
-                    orderRepo.findByStatusAndCreatedAtBefore("PENDING", current.minusMinutes(15));
-        for(Order ord: abandonedOrders)
-        {
+                    //if newReservationQty is 0, clear holdExpiresAt
+                    if(newReservationQty == 0)
+                    {
+                        inv.setHoldExpiresAt(null);
+                    }
+                }
+            }
+            //mark order as EXPIRED
             ord.setStatus("EXPIRED");
         }
     }
