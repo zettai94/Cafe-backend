@@ -15,6 +15,7 @@ import com.indiebiteskch.entity.OrderItem;
 import com.indiebiteskch.entity.Inventory;
 import com.indiebiteskch.exceptions.InsufficientStockException;
 import com.indiebiteskch.exceptions.OrderIDNotFoundException;
+import com.indiebiteskch.exceptions.OrderItemIDNotFoundException;
 import com.indiebiteskch.exceptions.ProductIDNotFoundException;
 
 import jakarta.transaction.Transactional;
@@ -89,8 +90,7 @@ public class OrderService {
     // when customer pays, finalize the order and deduct stock accordingly
     @Transactional
     public Order finalizeOrder(Long orderId) {
-        Order existing = orderRepo.findById(orderId)
-                .orElseThrow(() -> new OrderIDNotFoundException("Order ID " + orderId + " not found"));
+        Order existing = getOrderById(orderId);
 
         if (!"PENDING".equals(existing.getStatus())) {
             // may change to "DROPPED" status later
@@ -126,5 +126,43 @@ public class OrderService {
         }
         existing.setStatus("PAID");
         return orderRepo.save(existing);
+    }
+
+    // remove item from an order
+    @Transactional 
+    public Order removeItem(Long orderId, Long orderItemId)
+    {
+        Order currentOrder = getOrderById(orderItemId);
+
+        // check if orderItem exists in the current order
+        // else throw exception saying no such orderItemID exists
+        OrderItem removeItem = currentOrder.getOrderList().stream()
+                .filter(item -> item.getOrderItemID().equals(orderItemId))
+                .findFirst().orElseThrow(() -> new OrderItemIDNotFoundException("OrderItemID " + orderItemId + " not found."));
+
+        // get the inventory of that product to adjust reserved qty
+        // make sure it is not null (not tracked), and the get the orderItemId's reserved qty
+        Inventory inv = removeItem.getProduct().getInventory();
+        if(inv != null)
+        {
+            int newReservationQty = Math.max(0, inv.getReservedQty() - removeItem.getOrderQty());
+            inv.setReservedQty(newReservationQty);
+
+            //remove the reservation hold if reservation is now 0
+            if(newReservationQty == 0)
+            {
+                inv.setHoldExpiresAt(null);
+            }
+        }
+
+        //update Total price accordingly
+        BigDecimal deductRemovedPrice = removeItem.getPriceAtPurchase()
+                .multiply(BigDecimal.valueOf(removeItem.getOrderQty()));
+        currentOrder.setTotal(currentOrder.getTotal().subtract(deductRemovedPrice));
+
+        //remove the item from list of order items
+        currentOrder.getOrderList().remove(removeItem);
+
+        return orderRepo.save(currentOrder);
     }
 }
