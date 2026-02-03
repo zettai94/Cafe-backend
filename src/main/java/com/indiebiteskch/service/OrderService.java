@@ -132,7 +132,7 @@ public class OrderService {
     @Transactional 
     public Order removeItem(Long orderId, Long orderItemId)
     {
-        Order currentOrder = getOrderById(orderItemId);
+        Order currentOrder = getOrderById(orderId);
 
         // check if orderItem exists in the current order
         // else throw exception saying no such orderItemID exists
