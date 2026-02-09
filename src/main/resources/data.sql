@@ -1,7 +1,7 @@
 --Remove existing data and restart primary key sequences--
 --while maintaining table structure--
 --should be deleted when moving to production (for data persistence)--
-TRUNCATE TABLE product, inventory RESTART IDENTITY CASCADE;
+-- TRUNCATE TABLE order_item, cafe_order, product, inventory RESTART IDENTITY CASCADE;
 
 INSERT INTO product (product_name, product_category, product_price, descrip, product_image_url)
 VALUES ('Biscoff Tiramisu', 'CAKE', 5.50, 'Classic tiramisu with a twist','../images/biscoffTiramisu.png'), 

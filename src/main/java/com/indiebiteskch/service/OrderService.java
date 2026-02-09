@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.indiebiteskch.dto.OrderItemRequest;
 import com.indiebiteskch.entity.Order;
+import com.indiebiteskch.repository.InventoryRepo;
 import com.indiebiteskch.repository.OrderRepo;
 import com.indiebiteskch.entity.Product;
 import com.indiebiteskch.repository.ProductRepo;
@@ -24,12 +25,14 @@ import jakarta.transaction.Transactional;
 public class OrderService {
 
     private final OrderRepo orderRepo;
+    private final InventoryRepo invenRepo;
     private final ProductRepo productRepo;
 
     @Autowired
-    public OrderService(OrderRepo orderRepo, ProductRepo productRepo) {
+    public OrderService(OrderRepo orderRepo, ProductRepo productRepo, InventoryRepo invenRepo) {
         this.orderRepo = orderRepo;
         this.productRepo = productRepo;
+        this.invenRepo = invenRepo;
     }
 
     // Get order by ID
@@ -52,6 +55,11 @@ public class OrderService {
         } else {
             order = orderRepo.findById(existingOrderId)
                     .orElseThrow(() -> new OrderIDNotFoundException("Order id: " + existingOrderId + " not found"));
+            
+            // only allow adding to order if order is in PENDING status, else throw exception
+            if (!"PENDING".equals(order.getStatus())) {
+            throw new IllegalStateException("Order " + existingOrderId + " is " + order.getStatus() + ". Items can only be removed from PENDING orders.");
+        }
         }
 
         // 2. Logic to handle the product & inventory
@@ -100,6 +108,7 @@ public class OrderService {
 
         for (OrderItem item : existing.getOrderList()) {
             Inventory inv = item.getProduct().getInventory();
+            //if tracked inventory exits
             if (inv != null) {
                 // double check if enough stock is available
                 if (inv.getInStock() < item.getOrderQty()) {
@@ -122,6 +131,7 @@ public class OrderService {
                      */
                     inv.setHoldExpiresAt(null);
                 }
+                invenRepo.save(inv);
             }
         }
         existing.setStatus("PAID");
@@ -133,6 +143,11 @@ public class OrderService {
     public Order removeItem(Long orderId, Long orderItemId)
     {
         Order currentOrder = getOrderById(orderId);
+
+        // if current order is not PENDING, throw exception
+        if (!"PENDING".equals(currentOrder.getStatus())) {
+            throw new IllegalStateException("Order " + orderId + " is " + currentOrder.getStatus() + ". Items can only be removed from PENDING orders.");
+        }
 
         // check if orderItem exists in the current order
         // else throw exception saying no such orderItemID exists
