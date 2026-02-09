@@ -47,7 +47,7 @@ public class OrderService {
     public Order addToOrder(Long existingOrderId, OrderItemRequest itemReq) {
         Order order;
 
-        // 1. Get existing order or create a new one
+        // Get existing order or create a new one
         if (existingOrderId == null) {
             order = new Order();
             order.setStatus("PENDING");
@@ -62,7 +62,7 @@ public class OrderService {
         }
         }
 
-        // 2. Logic to handle the product & inventory
+        // Logic to handle the product & inventory
         Product prod = productRepo.findByProductId(itemReq.productId())
                 .orElseThrow(() -> new ProductIDNotFoundException(itemReq.productId()));
 
@@ -77,18 +77,18 @@ public class OrderService {
             // otherwise, set new reserved qty with current reserved + requested qty
             inv.setReservedQty(inv.getReservedQty() + itemReq.quantity());
 
-            // 3. RESET the timer for the entire order
+            // RESET the timer for the entire order
             inv.setHoldExpiresAt(LocalDateTime.now().plusMinutes(15));
         }
 
-        // 4. Link item to order
+        // Link item to order
         OrderItem orderItem = new OrderItem();
         orderItem.setProduct(prod);
         orderItem.setOrderQty(itemReq.quantity());
         orderItem.setPriceAtPurchase(prod.getProductPrice());
         order.addItem(orderItem);
 
-        // 5. Update total and save
+        // Update total and save
         BigDecimal currentTotal = order.getTotal() != null ? order.getTotal() : BigDecimal.ZERO;
         order.setTotal(currentTotal.add(prod.getProductPrice().multiply(BigDecimal.valueOf(itemReq.quantity()))));
 
@@ -100,6 +100,7 @@ public class OrderService {
     public Order finalizeOrder(Long orderId) {
         Order existing = getOrderById(orderId);
 
+        // Only allow PENDING status order to proceed with payment
         if (!"PENDING".equals(existing.getStatus())) {
             // may change to "DROPPED" status later
             // update "DROPPED" to be implemented in scheduler
@@ -131,6 +132,7 @@ public class OrderService {
                      */
                     inv.setHoldExpiresAt(null);
                 }
+                // Save inven accordingly; otherwise inven may not reflect beyond first in the orderitems
                 invenRepo.save(inv);
             }
         }
@@ -170,7 +172,7 @@ public class OrderService {
             }
         }
 
-        //update Total price accordingly
+        // update Total price accordingly
         BigDecimal deductRemovedPrice = removeItem.getPriceAtPurchase()
                 .multiply(BigDecimal.valueOf(removeItem.getOrderQty()));
         currentOrder.setTotal(currentOrder.getTotal().subtract(deductRemovedPrice));
