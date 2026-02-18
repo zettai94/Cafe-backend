@@ -14,7 +14,7 @@ public class WebConfig implements WebMvcConfigurer {
            browser-based security mechanism that restricts web pages from making requests 
            to different domain than the one that served the page */
         registry.addMapping("/**")
-                .allowedOrigins("https://indiebitescafe.vercel.app") 
+                .allowedOrigins("http://localhost:3000", "https://indiebitescafe.vercel.app") 
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true);

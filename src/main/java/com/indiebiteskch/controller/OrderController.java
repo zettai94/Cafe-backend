@@ -28,8 +28,6 @@ public class OrderController {
 
     // create new order; 
     // this is to be used when cart is clicked on and there is yet an id
-
-    //when user proceed to payment
     @PostMapping("/add-items")
     public ResponseEntity<Order> createPendingOrder(
             @RequestParam(required = false) Long existingOrderId,
