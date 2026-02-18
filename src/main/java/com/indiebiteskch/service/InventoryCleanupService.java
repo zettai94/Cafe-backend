@@ -20,7 +20,7 @@ public class InventoryCleanupService {
     @Autowired
     private OrderRepo orderRepo;
 
-    //@Scheduled(fixedRate = 60000) // runs every minute
+    @Scheduled(fixedRate = 60000) // runs every minute
     @Transactional
     public void cleanupExpiredReservations(){
         // if time now is 2 pm, any thing before 1.45 pm (15 mins ago) is expired
