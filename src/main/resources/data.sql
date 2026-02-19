@@ -3,6 +3,7 @@
 --should be deleted when moving to production (for data persistence)--
 -- TRUNCATE TABLE order_item, cafe_order, product, inventory RESTART IDENTITY CASCADE;
 
+--image url is temp, will be utilizing bucket from Supabase eventually
 INSERT INTO product (product_name, product_category, product_price, descrip, product_image_url)
 VALUES ('Biscoff Tiramisu', 'CAKE', 5.50, 'Classic tiramisu with a twist','../../../assets/images/biscoffTiramisu.png'), 
         ('Cranberry Scones', 'PASTRY', 3.00, 'Flaky & buttery, cranberries & hint of orange','../../../assets/images/scones.png'),
