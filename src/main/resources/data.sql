@@ -4,12 +4,12 @@
 -- TRUNCATE TABLE order_item, cafe_order, product, inventory RESTART IDENTITY CASCADE;
 
 INSERT INTO product (product_name, product_category, product_price, descrip, product_image_url)
-VALUES ('Biscoff Tiramisu', 'CAKE', 5.50, 'Classic tiramisu with a twist','../images/biscoffTiramisu.png'), 
-        ('Cranberry Scones', 'PASTRY', 3.00, 'Flaky & buttery, cranberries & hint of orange','../images/scones.png'),
-        ('Kyoto''s Summer', 'CAKE', 5.25, 'Creamy & rich matcha cake with adzuki bean, & mochi base', '../images/kyotosSummer.png'),
-        ('Hot Chocolate', 'BEVERAGE', 4.75, 'Rich & creamy hot chocolate with silky microfoam milk', '../images/hotChoco.png'),
+VALUES ('Biscoff Tiramisu', 'CAKE', 5.50, 'Classic tiramisu with a twist','../../../assets/images/biscoffTiramisu.png'), 
+        ('Cranberry Scones', 'PASTRY', 3.00, 'Flaky & buttery, cranberries & hint of orange','../../../assets/images/scones.png'),
+        ('Kyoto''s Summer', 'CAKE', 5.25, 'Creamy & rich matcha cake with adzuki bean, & mochi base', '../../../assets/images/kyotosSummer.png'),
+        ('Hot Chocolate', 'BEVERAGE', 4.75, 'Rich & creamy hot chocolate with silky microfoam milk', '../../../assets/images/hotChoco.png'),
         ('Latte', 'BEVERAGE', 4.25, 'Rich espresso with steamed milk', '../images/coffee.jpg'),
-        ('Flat White', 'BEVERAGE', 4.25, 'Australian-style rich espresso with thin silky microfoam', '../images/flatWhite.jpg')
+        ('Flat White', 'BEVERAGE', 4.25, 'Australian-style rich espresso with thin silky microfoam', '../../../assets/images/flatWhite.jpg')
 ON CONFLICT (product_name) DO NOTHING;
 
 INSERT INTO inventory (product_id, current_qty)
