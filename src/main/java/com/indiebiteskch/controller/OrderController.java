@@ -32,9 +32,8 @@ public class OrderController {
     // this is to be used when cart is clicked on and there is yet an id
     @PostMapping("/add-items")
     public ResponseEntity<Order> createPendingOrder(
-            @RequestParam(required = false) Long existingOrderId,
             @RequestBody OrderItemRequest orderRequest) {
-        Order updatedOrder = orderService.addToOrder(existingOrderId, orderRequest);
+        Order updatedOrder = orderService.addToOrder(orderRequest.orderId(), orderRequest);
         return ResponseEntity.ok(updatedOrder);
     }
 
