@@ -156,7 +156,7 @@ public class OrderService {
         // check if orderItem exists in the current order
         // else throw exception saying no such orderItemID exists
         OrderItem removeItem = currentOrder.getOrderList().stream()
-                .filter(item -> item.getOrderItemID().equals(orderItemId))
+                .filter(item -> item.getOrderItemId().equals(orderItemId))
                 .findFirst().orElseThrow(() -> new OrderItemIDNotFoundException("OrderItemID " + orderItemId + " not found."));
 
         // get the inventory of that product to adjust reserved qty
