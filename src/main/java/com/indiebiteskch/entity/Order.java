@@ -18,7 +18,7 @@ public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "order_id")
-    private Long orderID;
+    private Long orderId;
 
     @Column(name = "order_date", updatable = false)
     private LocalDateTime createdAt;
