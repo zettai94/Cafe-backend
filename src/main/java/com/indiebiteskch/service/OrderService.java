@@ -4,7 +4,9 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.indiebiteskch.dto.OrderItemRequest;
 import com.indiebiteskch.entity.Order;
@@ -58,8 +60,8 @@ public class OrderService {
             
             // only allow adding to order if order is in PENDING status, else throw exception
             if (!"PENDING".equals(order.getStatus())) {
-            throw new IllegalStateException("Order " + existingOrderId + " is " + order.getStatus() + ". Items can only be removed from PENDING orders.");
-        }
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Order " + existingOrderId + " is " + order.getStatus());
+            }
         }
 
         // Logic to handle the product & inventory
