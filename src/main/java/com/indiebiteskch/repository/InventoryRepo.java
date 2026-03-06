@@ -11,9 +11,9 @@ import org.springframework.data.repository.query.Param;
 import com.indiebiteskch.entity.Inventory;
 
 public interface InventoryRepo extends JpaRepository<Inventory, Long>{
-    @Modifying
-    @Query("UPDATE Inventory i SET i.reservedQty = 0, i.holdExpiresAt = null WHERE i.holdExpiresAt <= :now")
-    void releaseExpiredHolds(@Param("now") LocalDateTime now);
+    // @Modifying
+    // @Query("UPDATE Inventory i SET i.reservedQty = 0, i.holdExpiresAt = null WHERE i.holdExpiresAt <= :now")
+    // void releaseExpiredHolds(@Param("now") LocalDateTime now);
 
     List<Inventory> findByHoldExpiresAtBefore(LocalDateTime now);
 }

@@ -52,4 +52,8 @@ public class Inventory {
             }
         }
     }
+
+    public boolean isHoldExpired() {
+        return holdExpiresAt != null && holdExpiresAt.isBefore(LocalDateTime.now());
+    }
 }

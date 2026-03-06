@@ -1,6 +1,7 @@
 package com.indiebiteskch.service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,42 +27,36 @@ import jakarta.transaction.Transactional;
 @Service
 public class OrderService {
 
-    private final OrderRepo orderRepo;
-    private final InventoryRepo invenRepo;
-    private final ProductRepo productRepo;
+    @Autowired
+    private OrderRepo orderRepo;
 
     @Autowired
-    public OrderService(OrderRepo orderRepo, ProductRepo productRepo, InventoryRepo invenRepo) {
-        this.orderRepo = orderRepo;
-        this.productRepo = productRepo;
-        this.invenRepo = invenRepo;
-    }
+    private InventoryRepo invenRepo;
 
-    // Get order by ID
-    public Order getOrderById(Long id) {
-        return orderRepo.findById(id)
-                .orElseThrow(() -> new OrderIDNotFoundException("Order id: " + id + " not found"));
-    }
+    @Autowired
+    private ProductRepo productRepo;
 
-    // Create order; will reserve stock until "pay" button is clicked (demo purpose)
-    // and check for inventory
-    @Transactional
-    public Order addToOrder(Long existingOrderId, OrderItemRequest itemReq) {
-        Order order;
-
-        // Get existing order or create a new one
-        if (existingOrderId == null) {
-            order = new Order();
-            order.setStatus("PENDING");
-            order.setTotal(BigDecimal.ZERO);
+    public Order getOrCreateOrder(Long id) {
+        if (id == null) {
+            Order newOrder = new Order();
+            newOrder.setStatus("PENDING");
+            newOrder.setTotal(BigDecimal.ZERO);
+            return orderRepo.save(newOrder);
         } else {
-            order = orderRepo.findById(existingOrderId)
-                    .orElseThrow(() -> new OrderIDNotFoundException("Order id: " + existingOrderId + " not found"));
-            
-            // only allow adding to order if order is in PENDING status, else throw exception
-            if (!"PENDING".equals(order.getStatus())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Order " + existingOrderId + " is " + order.getStatus());
-            }
+            return orderRepo.findById(id)
+                    .orElseThrow(() -> new OrderIDNotFoundException("Order id: " + id + " not found"));
+        }
+    }
+
+
+    // // Create order; will reserve stock until "pay" button is clicked (demo purpose)
+    // // and check for inventory
+    @Transactional
+    public Order addToOrder(Long orderId, OrderItemRequest itemReq) {
+        Order order = getOrCreateOrder(orderId);
+
+        if(order.getStatus() != "PENDING") {
+            throw new IllegalStateException("Order ID " + orderId + " is not in PENDING status");
         }
 
         // Logic to handle the product & inventory
@@ -70,17 +65,25 @@ public class OrderService {
 
         Inventory inv = prod.getInventory();
         if (inv != null) {
-            // if what's in stock - current reserved qty is less than the requested qty
-            // throw insufficient stock exception
-            if (inv.getInStock() - inv.getReservedQty() < itemReq.quantity()) {
+            //if hold is expired, the reserved quantity will be treated as 0
+            //therefore opening up the stock for new customers to grab
+            int effectiveReserved = inv.isHoldExpired() ? 0 : inv.getReservedQty();
+            int available = inv.getInStock() - effectiveReserved;
+            
+            if (available < itemReq.quantity()) {
                 throw new InsufficientStockException("Insufficient stock for product: " + prod.getProductName());
             }
+        
+            //if old reserved qty is expired, reset count before adding the new qty
+            if(inv.isHoldExpired()) {
+                inv.setReservedQty(itemReq.quantity());
+            }
+            else{
+                inv.setReservedQty(inv.getReservedQty() + itemReq.quantity());
+            }
 
-            // otherwise, set new reserved qty with current reserved + requested qty
-            inv.setReservedQty(inv.getReservedQty() + itemReq.quantity());
-
-            // RESET the timer for the entire order
             inv.setHoldExpiresAt(LocalDateTime.now().plusMinutes(15));
+            invenRepo.save(inv);
         }
 
         // Link item to order
@@ -88,6 +91,8 @@ public class OrderService {
         orderItem.setProduct(prod);
         orderItem.setOrderQty(itemReq.quantity());
         orderItem.setPriceAtPurchase(prod.getProductPrice());
+        orderItem.setOrder(order);
+
         order.addItem(orderItem);
 
         // Update total and save
@@ -100,7 +105,8 @@ public class OrderService {
     // when customer pays, finalize the order and deduct stock accordingly
     @Transactional
     public Order finalizeOrder(Long orderId) {
-        Order existing = getOrderById(orderId);
+        Order existing = orderRepo.findById(orderId)
+                .orElseThrow(() -> new OrderIDNotFoundException("Order id: " + orderId + " not found"));
 
         // Only allow PENDING status order to proceed with payment
         if (!"PENDING".equals(existing.getStatus())) {
@@ -113,16 +119,19 @@ public class OrderService {
             Inventory inv = item.getProduct().getInventory();
             //if tracked inventory exits
             if (inv != null) {
-                // double check if enough stock is available
+                
                 if (inv.getInStock() < item.getOrderQty()) {
                     throw new InsufficientStockException("Insufficient stock for product: " +
                             item.getProduct().getProductName());
                 }
                 // deduct stock based on order quantity
                 inv.setInStock(inv.getInStock() - item.getOrderQty());
-                // reduce reserved quantity accordingly
-                // Math.max used to prevent negative reservedQty to prevent concurrency issues
-                inv.setReservedQty(Math.max(0, inv.getReservedQty() - item.getOrderQty()));
+                
+                //refactor: if hold expired, cleanup or another user might already 
+                // reset the reservedqty; make sure not less than 0
+                int newReservedQty = Math.max(0, inv.getReservedQty() - item.getOrderQty());
+                inv.setReservedQty(newReservedQty);
+
                 // clear hold expiry, only if time is at 0
                 if (inv.getReservedQty() == 0) {
                     /*
@@ -146,7 +155,8 @@ public class OrderService {
     @Transactional 
     public Order removeItem(Long orderId, Long orderItemId)
     {
-        Order currentOrder = getOrderById(orderId);
+        Order currentOrder = orderRepo.findById(orderId)
+                .orElseThrow(() -> new OrderIDNotFoundException("Order id: " + orderId + " not found"));
 
         // if current order is not PENDING, throw exception
         if (!"PENDING".equals(currentOrder.getStatus())) {
