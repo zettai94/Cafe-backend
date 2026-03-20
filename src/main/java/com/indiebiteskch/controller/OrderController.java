@@ -52,7 +52,7 @@ public class OrderController {
     }
 
     //remove item from order (removing item entirely from order)
-    @DeleteMapping("/{orderId}/items/{orderItemId}")
+    @DeleteMapping("{orderId}/items/{orderItemId}")
     public ResponseEntity<?> deleteItem(@PathVariable Long orderId,
                                             @PathVariable Long orderItemId) {
         Order updatedOrder = orderService.removeItem(orderId, orderItemId);
