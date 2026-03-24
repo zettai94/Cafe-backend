@@ -52,7 +52,7 @@ public class OrderService {
     public Order addToOrder(Long orderId, OrderItemRequest itemReq) {
         Order order = getOrCreateOrder(orderId);
 
-        if(order.getStatus() != "PENDING") {
+        if(!"PENDING".equals(order.getStatus())) {
             throw new IllegalStateException("Order ID " + orderId + " is not in PENDING status");
         }
 

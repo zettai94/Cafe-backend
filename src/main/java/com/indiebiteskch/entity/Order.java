@@ -35,7 +35,7 @@ public class Order {
 
     @Column(name = "total_amount")
     @PositiveOrZero(message = "Total amount cannot be negative")
-    private BigDecimal total;
+    private BigDecimal total = BigDecimal.ZERO;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List <OrderItem> orderList = new ArrayList<>();
