@@ -184,7 +184,9 @@ public class OrderService {
         // update Total price accordingly
         BigDecimal deductRemovedPrice = removeItem.getPriceAtPurchase()
                 .multiply(BigDecimal.valueOf(removeItem.getOrderQty()));
-        currentOrder.setTotal(currentOrder.getTotal().subtract(deductRemovedPrice));
+        BigDecimal newTotal = currentOrder.getTotal().subtract(deductRemovedPrice);
+        //precaution to prevent total from going negative due to any unforeseen bugs
+        currentOrder.setTotal(newTotal.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO: newTotal);
 
         //remove the item from list of order items
         currentOrder.getOrderList().remove(removeItem);
